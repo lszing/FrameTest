@@ -1,0 +1,19 @@
+{
+  "case1": {
+    "info": "",
+    "stepList": {
+      "1": {
+        "scene": "cashdesk_pc_bankquota",
+        "assert": {
+          "response": {
+            "<elementscount>": {
+              "data": {
+                "content": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

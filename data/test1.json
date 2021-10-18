@@ -1,0 +1,30 @@
+{
+  "case1": {
+    "info": "",
+    "stepList": {
+      "1": {
+        "scene": "cashdesk_pc_bankquota",
+        "params": {
+          "version": "1"
+        },
+        "assert": {
+          "response": {
+            "<notnull>": {
+              "data": {
+                "content": ["sp_no","amount"]
+              }
+            },
+            "<notequal>": {
+              "data": {
+                "content":{
+                  "amount": "123"
+                }
+              }
+            },
+            "code": 200
+          }
+        }
+      }
+    }
+  }
+}

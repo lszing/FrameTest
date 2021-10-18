@@ -1,0 +1,19 @@
+{
+  "case1": {
+    "info": "",
+    "stepList": {
+      "1": {
+        "scene": "cashdesk_pc_bankquota",
+        "assert": {
+          "response": {
+            "<regexmatch>": {
+              "data": {
+                "content":{"sp_no": "1213"}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

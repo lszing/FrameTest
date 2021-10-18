@@ -1,0 +1,35 @@
+{
+  "case1": {
+    "info": "",
+    "stepList": {
+      "1": {
+        "scene": "client_action",
+        "params": {
+          "testttt": "testtttt"
+        },
+        "body": {
+          "body": "body"
+        },
+        "assert": {
+          "response": {
+            "code": "1"
+          }
+        }
+      },
+      "2": {
+        "scene": "client_action",
+        "params": {
+          "testttt": "1.client_action.params.testttt"
+        },
+        "body": {
+          "body": "1.client_action.body.body"
+        },
+        "assert": {
+          "response": {
+            "code": "1"
+          }
+        }
+      }
+    }
+  }
+}

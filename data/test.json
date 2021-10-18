@@ -1,0 +1,59 @@
+{
+  "case1": {
+    "info": "",
+    "stepList": {
+      "1": {
+        "scene": "cashdesk_pc_bankquota",
+        "params": {
+          "version": "1"
+        },
+        "assert": {
+          "response": {
+            "<notnull>": {
+              "data": {
+                "content": "sp_no"
+              }
+            },
+            "<typeequal>": {
+              "data": {
+                "content": {
+                  "sp_no": "str"
+                }
+              }
+            },
+            "<notequal>": {
+              "data.content.sp_no": "12345678",
+              "data": {
+                "content": {
+                  "sp_no1":"12345678"
+                }
+              }
+            },
+            "code": 200
+          }
+        }
+      }
+    }
+  },
+  "case2": {
+    "info": "",
+    "stepList": {
+      "1": {
+        "scene": "cashdesk_pc_bankquota",
+        "params": {
+          "version": "21"
+        },
+        "assert": {
+          "response": {
+            "<notnull>": {
+              "data": {
+                "content": "sp_no"
+              }
+            },
+            "code": 200
+          }
+        }
+      }
+    }
+  }
+}
