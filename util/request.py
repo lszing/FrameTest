@@ -1,12 +1,14 @@
 import requests
 from log.logpro import log
 import json
+import urllib.parse
 
 
 class RequestsHandler:
 
     def get_req(self, url, params, headers=None, **kw):
         try:
+            print(url + '?' + params + '\n')
             response = requests.get(url, params=params, headers=headers, **kw)
         except:
             log.warning("get 请求失败")
@@ -17,7 +19,10 @@ class RequestsHandler:
 
     def post_req(self, url, params=None, data=None, headers=None, **kw):
         try:
-            response = requests.post(url, data=data, params=json.dumps(params), headers=headers, **kw)
+            print(url + '?' + urllib.parse.urlencode(
+                params) + '&' + urllib.parse.urlencode(data) + '\n')
+            # print(url+'?'+urllib.parse.urlencode(params))
+            response = requests.post(url, data=data, params=params, headers=headers, **kw)
         except:
             log.fatal("post 请求失败")
             return False
@@ -38,21 +43,32 @@ class RequestsHandler:
         else:
             return requests.request(method, url, **kw)
 
+    def structure_request(self, url, params=None, data=None, headers=None, **kw):
+        params_str = ''
+        data_str = ''
+        if params:
+            for key in params:
+                params_str += '&' + key + '=' + params[key]
+        # if data:
+        #     for key in data:
+        #         data_str += '&' + key + '=' + urllib.parse.urlencode(data[key])
+        url_str = url + '?' + urllib.parse.urlencode(params_str) +'&'+urllib.parse.urlencode(data)
+
 
 if __name__ == '__main__':
     # dict1={"a1":{"a11":"123"}}
     import copy
 
+    url = 'http://ware.m.jd.care/client.action'
+    params = {"functionId": "cartAdd", "testttt": "testtttt"}
+    data = {'area': '184549376_185008128_185008132_0', 'body': 'body', 'build': '3608'}
+    RequestsHandler().structure_request(url=url, params=params, data=data)
     # print({**dict1,**dict2})
     # dict2=copy.deepcopy(dict1)
     # dict2['a1']['a11']="23425"
     # print(dict1)
     # dict1.update(dict2)
     # print(dict1,dict2)
-    url = 'http://127.0.0.1:8080/bankquota'
-    params = {
-        "version": "1234"
-    }
 
-    response = requests.get(url=url, params=None)
-    print(response.content.decode())
+    # response = requests.get(url=url, params=None)
+    # print(response.content.decode())

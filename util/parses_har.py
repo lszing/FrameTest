@@ -1,6 +1,7 @@
 import os
 import json
 import re
+from urllib import parse
 
 
 class ParsesHar():
@@ -36,8 +37,8 @@ class ParsesHar():
             w.write(indent + 'common_params = {\n')
             for index in request_data['queryString']:
                 w.write(
-                    indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"', re.sub('\'', '\\\'', index[
-                        'value'])) + '\",\n')
+                    indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"', re.sub('\'', '\\\'', parse.unquote(index[
+                        'value']))) + '\",\n')
             w.write(indent + '}\n')
 
             #common_body
@@ -46,8 +47,8 @@ class ParsesHar():
             if 'postData' in request_data.keys():
                 for index in request_data['postData']['params']:
                     w.write(indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"',
-                                                                                       re.sub('\'', '\\\'', index[
-                                                                                           'value'])) + '\",\n')
+                                                                                       re.sub('\'', '\\\'', parse.unquote(index[
+                                                                                           'value']))) + '\",\n')
             w.write(indent + '}\n')
 
             # common_headers
@@ -72,13 +73,15 @@ class ParsesHar():
             w.write(indent + 'common_method = \'' + request_data['method'] + '\'\n\n')
 
             # customized_data
-            w.write(indent + '#准备数据最后一步,支持定制化操作 \n')
-            w.write(indent + '# def customized_data(self):\n')
-            w.write(indent + '#' + indent * 2 + 'pass \n')
+            w.write(indent + '#准备数据最后一步,支持定制化操作,#父类目前为根据sp_no生成签名\n')
+            # w.write(indent + '# def customized_data(self):\n')
+            # w.write(indent + '#' + indent * 2 + 'pass \n')
+            w.write(indent + 'def customized_data(self):\n')
+            w.write(indent * 2 + 'pass \n')
 
 
 if __name__ == "__main__":
-    ParsesHar("client.action").parses()
-    strrr = "120"
+    ParsesHar("client_action").parses()
+    # strrr = "120"
     # isinstance(st1r, str): st1r?"123"
-    print(re.sub('\"', '\\\"', re.sub('\'', '\\\'', strrr)))
+    # print(re.sub('\"', '\\\"', re.sub('\'', '\\\'', strrr)))

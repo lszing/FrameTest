@@ -7,11 +7,11 @@ class TBase():
 
     def setup(self):
         log.info("开始执行用例")
-        print('开始执行用例，并打印日志')
+        print('\n开始执行用例，并打印日志')
 
     def teardown(self):
         log.info("用例执行结束")
-        print('\n 用例执行结束')
+        print('\n用例执行结束')
 
 
     def test_scene_work(self, data):

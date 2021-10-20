@@ -75,10 +75,10 @@ class Checker(object):
                 elif value:
                     try:
                         assert value == self.actual_data[key]
-                        print(f"except_data=[ {key}={value} ], actual_data={self.actual_data} check success")
+                        print(f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={self.actual_data[key]}]\n------------\ncheck success")
                     except:
                         # log.fatal(f"except_data={value} \n, actual_data={json.dumps(self.actual_data,indent=4)}")
-                        log.fatal(f"except_data=[ {key}={value} ], actual_data={self.actual_data}")
+                        log.fatal(f"except_data=[ {key}={value} ], actual_data=[ {self.actual_data} ]")
                         return False
                 #  eg: message.data.amount
                 elif len(key.split('.')) > 1:
@@ -136,7 +136,7 @@ class Checker(object):
             for j in check_data:
                 assert check_data[j] != '' and check_data[j] is not None
             print(
-                f" except_data=={except_data} is not None,actual_data={result_dict['actual_data'][key]} assert success")
+                f"except_data is {except_data} is not None\n------------\nactual_data={result_dict['actual_data'][key]}\n------------\nassert success")
         # else:
         # 进入else则认为未取到key 既校验失败
         # return False

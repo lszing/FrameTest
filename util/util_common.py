@@ -59,7 +59,6 @@ def get_value_by_rule_in_dict(origin_data, data):
                 str_list = value.split('.')
                 count = len(str_list)
                 if count > 1:
-                    print('开始切分')
                     key_value = get_value_by_rule1(origin_data, value)
                     # key_value = get_value_by_rule(origin_data, str_list, count)
                     # if key_value:
@@ -135,7 +134,6 @@ def get_value_by_rule_in_dict1(origin_data, data):
             str_list = value.split('.')
             count = len(str_list)
             if count > 1:
-                print('开始切分')
                 key_value = get_value_by_rule1(origin_data, value)
                 # key_value = get_value_by_rule(origin_data, str_list, count)
                 # if key_value:
