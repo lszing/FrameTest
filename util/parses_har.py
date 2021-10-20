@@ -23,6 +23,7 @@ class ParsesHar():
             self.file_name = re.sub('\\.', '_', self.file_name)
         if len(self.file_name.split('/')) > 1:
             self.file_name = re.sub('/', '_', self.file_name)
+
         write_file = self.path + '\\api\\' + self.file_name + '.py'
         print(write_file)
         with open(write_file, "w+", encoding='UTF-8') as w:
@@ -37,7 +38,10 @@ class ParsesHar():
                 w.write(
                     indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"', re.sub('\'', '\\\'', index[
                         'value'])) + '\",\n')
+            w.write(indent + '}\n')
 
+            #common_body
+            w.write(indent + 'common_body = {\n')
             # value['name'] + '\": ' + '\"' + index['value'].replace('\"','\\\"').replace('\'', '\\\'') if isinstance(index['value'], str) else index['value']
             if 'postData' in request_data.keys():
                 for index in request_data['postData']['params']:
