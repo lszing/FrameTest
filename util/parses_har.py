@@ -7,10 +7,9 @@ from urllib import parse
 class ParsesHar():
     def __init__(self, file_name):
         self.file_name = file_name
-        self.path = ''
+        self.path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def parses(self):
-        self.path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         file = self.path + '/' + 'resources' + '/' + self.file_name + '.har'
         with open(file, 'r', encoding="UTF-8") as f:
             har_data = json.load(f)
@@ -37,18 +36,20 @@ class ParsesHar():
             w.write(indent + 'common_params = {\n')
             for index in request_data['queryString']:
                 w.write(
-                    indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"', re.sub('\'', '\\\'', parse.unquote(index[
-                        'value']))) + '\",\n')
+                    indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"',
+                                                                               re.sub('\'', '\\\'', parse.unquote(index[
+                                                                                                                      'value']))) + '\",\n')
             w.write(indent + '}\n')
 
-            #common_body
+            # common_body
             w.write(indent + 'common_body = {\n')
             # value['name'] + '\": ' + '\"' + index['value'].replace('\"','\\\"').replace('\'', '\\\'') if isinstance(index['value'], str) else index['value']
             if 'postData' in request_data.keys():
                 for index in request_data['postData']['params']:
                     w.write(indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"',
-                                                                                       re.sub('\'', '\\\'', parse.unquote(index[
-                                                                                           'value']))) + '\",\n')
+                                                                                       re.sub('\'', '\\\'',
+                                                                                              parse.unquote(index[
+                                                                                                                'value']))) + '\",\n')
             w.write(indent + '}\n')
 
             # common_headers
@@ -79,9 +80,33 @@ class ParsesHar():
             w.write(indent + 'def customized_data(self):\n')
             w.write(indent * 2 + 'pass \n')
 
+    def har_to_data(self):
+        data_file = self.path + '/' + 'data' + '/' + 'test_' + self.file_name + '.json'
+        print(data_file)
+        with open(data_file, 'w+', encoding='UTF-8') as w:
+            indent = '  '
+            w.write('{ \n')
+            w.write(indent + '\"case1\": {\n')
+            w.write(indent * 2 + '\"info\":\"\",\n')
+            w.write(indent * 2 + '\"stepList\": {\n')
+            w.write(indent * 3 + '\"1\": {\n')
+            w.write(indent * 4 + '\"scene\": \"' + self.file_name + '\",\n')
+            w.write(indent * 4 + '\"assert\": {\n')
+            w.write(indent * 5 + '\"response\": {\n')
+            w.write(indent * 6 + '\"code\": 0\n')
+            w.write(indent * 5 + '}\n')
+            w.write(indent * 4 + '}\n')
+            w.write(indent * 3 + '}\n')
+            w.write(indent * 2 + '}\n')
+            w.write(indent + '}\n')
+            w.write('}\n')
+
 
 if __name__ == "__main__":
-    ParsesHar("client_action").parses()
+    par = ParsesHar("searchCate")
+    par.parses()
+    par.har_to_data()
+    print('pytest -v -s --path test_searchCate Suites/test_api.py' )
     # strrr = "120"
     # isinstance(st1r, str): st1r?"123"
     # print(re.sub('\"', '\\\"', re.sub('\'', '\\\'', strrr)))
