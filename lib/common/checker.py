@@ -40,12 +40,12 @@ class Checker(object):
             except:
                 log.warning(f'key {key} is not in mehtod_map {self.method_map}')
                 raise AssertionError(f'key {key} is not in mehtod_map {self.method_map}')
-                # return False
             result = getattr(self, met)(value)
-            # result = met(value)
-            if result == False:
-                raise AssertionError
-            else:
+            # if result == False:
+            #     raise AssertionError
+            # else:
+            #     return True
+            if result != False:
                 return True
 
     def check_point(self, except_data):
@@ -56,15 +56,17 @@ class Checker(object):
                 if re.match(r'^\<[A-Za-z]+\>$', key):
                     # 通过正则
                     func = self.get_rule(key)
-                    try:
-                        # result = getattr(self, func)(value, self.actual_data)
-                        getattr(self, func)(value, self.actual_data)
-                    except Exception as e:
-                        # print(repr(e))
-                        # traceback.format_exc()
-                        log.fatal(f"file {e.__traceback__.tb_frame.f_globals['__file__']} {e.__traceback__.tb_lineno} {e}")
-                        log.fatal(f'method {func} check fail')
-                        return False
+                    # todo 10.26 优化校验结果逻辑 可能改回来
+                    # try:
+                    # result = getattr(self, func)(value, self.actual_data)
+                    getattr(self, func)(value, self.actual_data)
+                    # except Exception as e:
+                    #     # print(repr(e))
+                    #     # traceback.format_exc()
+                    #     log.fatal(
+                    #         f"file {e.__traceback__.tb_frame.f_globals['__file__']} {e.__traceback__.tb_lineno} {e}")
+                    #     log.fatal(f'method {func} check fail')
+                    #     return False
                     # if result == False:
                     #     raise "异常，未到校验逻辑"
                     # else:
@@ -72,31 +74,45 @@ class Checker(object):
                 # 不符合正则 则认为是正常字段做==校验
                 # python3已经从删除dict.has_key()方法
                 # elif value and key in self.actual_data:
-                elif value:
-                    try:
-                        assert value == self.actual_data[key]
-                        print(f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={self.actual_data[key]}]\n------------\ncheck success")
-                    except:
-                        # log.fatal(f"except_data={value} \n, actual_data={json.dumps(self.actual_data,indent=4)}")
-                        log.fatal(f"except_data=[ {key}={value} ], actual_data=[ {self.actual_data} ]")
-                        return False
-                #  eg: message.data.amount
                 elif len(key.split('.')) > 1:
                     tmp_actual_data = copy.deepcopy(self.actual_data)
                     key_list = key.split('.')
                     for i in range(len(key_list)):
                         try:
                             # 实际结果
-                            tmp_actual_data = tmp_actual_data[key_list[i]]
+                            if key_list[i].isdigit():
+                                num = int(key_list[i])
+                                tmp_actual_data = tmp_actual_data[num]
+                            else:
+                                tmp_actual_data = tmp_actual_data[key_list[i]]
+
                         except:
                             log.fatal(f'key {key_list[i]} is not in actual_data={tmp_actual_data}')
-                            return False
+                            raise AssertionError(f'key {key_list[i]} is not in actual_data={tmp_actual_data}')
                     # 判断成功
-                    if tmp_actual_data == value:
-                        return True
-                    else:
-                        log.fatal(f'except {key}={value} ,actual {tmp_actual_data} is not eqaul')
-                        return False
+                    try:
+                        assert tmp_actual_data == value
+                        print(
+                            f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={tmp_actual_data}]\n------------\ncheck success")
+                    except:
+                        log.fatal(f'except {key}=[{value}] ,actual [{tmp_actual_data}]is not eqaul')
+                        print(
+                            f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={tmp_actual_data}]\n------------\ncheck Fail")
+                        raise AssertionError(f'except {key}={value} ,actual {tmp_actual_data} is not eqaul')
+                elif value:
+                    try:
+                        print('-------------------------------------------------------\n', type(self.actual_data))
+                        assert value == self.actual_data[key]
+                        print(
+                            f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={self.actual_data[key]}]\n------------\ncheck success")
+                    except:
+                        # log.fatal(f"except_data={value} \n, actual_data={json.dumps(self.actual_data,indent=4)}")
+                        log.fatal(f"except_data=[ {key}={value} ], actual_data=[{key}={self.actual_data[key]}]")
+                        print(
+                            f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={self.actual_data[key]}]\n------------\ncheck Fail")
+                        raise AssertionError(
+                            f"except_data=[ {key}={value} ],actual_data=[{key}={self.actual_data[key]}]")
+                #  eg: message.data.amount
             return True
 
     def get_rule(self, key):
@@ -172,9 +188,7 @@ class Checker(object):
     #
     #         print(f" assert success")
 
-
-
-    #根据期望数据获取实际结果
+    # 根据期望数据获取实际结果
     def get_check_data(func):
         def wrapper(self, except_data, actual_data):
             result_dict = util_common().recursive(except_data, actual_data)
@@ -190,12 +204,13 @@ class Checker(object):
 
         return wrapper
 
-    #判断类型相同  10.11 done
+    # 判断类型相同  10.11 done
     @get_check_data
     def checkTypeEquals(self, except_data, actual_data):
         if except_data not in self.type_list:
             raise TypeError(f"except_data type {except_data} not in type_list{self.type_list}")
-        assert isinstance(actual_data,eval(except_data))
+        assert isinstance(actual_data, eval(except_data))
+
     # 判断不相等 测试完成9.30
     @get_check_data
     def checkNotEquals(self, except_data, actual_data):
@@ -209,7 +224,8 @@ class Checker(object):
     def checkArrayHasKeys(self, except_data, actual_data):
         if isinstance(except_data, list):
             for i in range(len(except_data)):
-                assert except_data[i] in actual_data.keys() ,f"checkArrayHasKeys fail except_data={except_data[i]} not in actual_data={actual_data.keys()}"
+                assert except_data[
+                           i] in actual_data.keys(), f"checkArrayHasKeys fail except_data={except_data[i]} not in actual_data={actual_data.keys()}"
         else:
             assert except_data in actual_data.keys()
 
@@ -236,15 +252,14 @@ class Checker(object):
         print('ac', actual_data)
         assert except_data == len(actual_data.keys())
 
-    #正则匹配校验 入参直接返回 字段值 不包括键名  9.30done  无法校验正则本身正确性
+    # 正则匹配校验 入参直接返回 字段值 不包括键名  9.30done  无法校验正则本身正确性
     @get_check_data
     def checkStringRegexMatch(self, except_data, actual_data):
         assert re.match(except_data, actual_data)
 
 
-
 if __name__ == '__main__':
-    pass
+    # pass
     # if re.match(r'^\<[A-Za-z]+\>$', '<mathch>'):
     #     print('1')
     # else:
@@ -257,3 +272,6 @@ if __name__ == '__main__':
     # a = '1231241'
     # b = 'str'
     # assert isinstance(a, eval(b))
+    lis = [{'label': 'Subtotal:', 'value': '17180', 'type': 1, 'tag': 'TOTAL'},
+           {'label': 'Shipping Fee: ', 'value': '+0', 'type': 1}]
+    print(lis[1])
