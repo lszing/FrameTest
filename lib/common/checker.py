@@ -6,6 +6,8 @@ from util.readJson import ReadJson
 from util.util_common import util_common
 import traceback
 
+indent = '\n--------------------------------------------------------------------------\n'
+
 
 class Checker(object):
     method_map = {
@@ -22,6 +24,8 @@ class Checker(object):
         "elementscount": "checkArrayElementsCount",
         "withoutkeys": "checkWithoutKeys",
         "regexmatch": "checkStringRegexMatch",
+        "existvalue": "checkValueIsExist",  # 字典中多重key且值不确定在哪个key中，规范格式要求data.content.*.order_no 其中*为多重key
+        "existnotvalue": "checkValueNotExist",  # 同上
         "inarray": "checkContainsInArray",
         "checktype": "checkTypeOnly",
         "containsubset": "checkContainsSubset",
@@ -87,31 +91,32 @@ class Checker(object):
                                 tmp_actual_data = tmp_actual_data[key_list[i]]
 
                         except:
-                            log.fatal(f'key {key_list[i]} is not in actual_data={tmp_actual_data}')
-                            raise AssertionError(f'key {key_list[i]} is not in actual_data={tmp_actual_data}')
+                            log.fatal(f'key [{key_list[i]}] is not in actual_data:{tmp_actual_data}')
+                            raise AssertionError(f'key [{key_list[i]}] is not in actual_data:{tmp_actual_data}')
                     # 判断成功
                     try:
                         assert tmp_actual_data == value
                         print(
-                            f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={tmp_actual_data}]\n------------\ncheck success")
+                            f'{indent}except_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={tmp_actual_data},type:{type(value)}]{indent}check success! ')
                     except:
-                        log.fatal(f'except {key}=[{value}] ,actual [{tmp_actual_data}]is not eqaul')
-                        print(
-                            f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={tmp_actual_data}]\n------------\ncheck Fail")
-                        raise AssertionError(f'except {key}={value} ,actual {tmp_actual_data} is not eqaul')
-                elif value:
+                        log.fatal(
+                            f"except_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={tmp_actual_data},type:{type(value)}]{indent}check Fail")
+                        # print(
+                        #     f"except_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={tmp_actual_data},type:{type(value)}]{indent}check Fail")
+                        raise AssertionError(
+                            f'{indent}except_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={tmp_actual_data},type:{type(value)}] {indent}\033[30;41;1m not equal,check fail \033[0m')
+                else:
                     try:
-                        print('-------------------------------------------------------\n', type(self.actual_data))
                         assert value == self.actual_data[key]
                         print(
-                            f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={self.actual_data[key]}]\n------------\ncheck success")
+                            f"except_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={self.actual_data[key]},type:{type(self.actual_data[key])}]{indent}\033[32;1m check success \033[0m")
                     except:
-                        # log.fatal(f"except_data={value} \n, actual_data={json.dumps(self.actual_data,indent=4)}")
-                        log.fatal(f"except_data=[ {key}={value} ], actual_data=[{key}={self.actual_data[key]}]")
+                        log.fatal(
+                            f"except_data:[{key}={value},type:{type(value)}], actual_data:[{key}={self.actual_data[key]},type:{type(self.actual_data[key])}]")
                         print(
-                            f"except_data=[{key}={value}]\n------------\nactual_data=[{key}={self.actual_data[key]}]\n------------\ncheck Fail")
+                            f"except_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={self.actual_data[key]},type={type(self.actual_data[key])}]{indent}check Fail")
                         raise AssertionError(
-                            f"except_data=[ {key}={value} ],actual_data=[{key}={self.actual_data[key]}]")
+                            f"except_data:[{key}={value},type:{type(value)}],actual_data:[{key}={self.actual_data[key]},type={type(self.actual_data[key])}],check Fail")
                 #  eg: message.data.amount
             return True
 
@@ -146,13 +151,13 @@ class Checker(object):
             except:
                 log.fatal(
                     f'get data fail ,key=\' {value} \' is not in actual_data={actual_data}  ')
-                raise AssertionError
+                raise AssertionError(f'get data fail,[key={value}] is not in [actual_data={actual_data}]')
             log.info(
                 f"start checkNotNull,except_data=={result_dict['except_data']},actual_data={result_dict['actual_data']}")
             for j in check_data:
                 assert check_data[j] != '' and check_data[j] is not None
             print(
-                f"except_data is {except_data} is not None\n------------\nactual_data={result_dict['actual_data'][key]}\n------------\nassert success")
+                f"except_data is {except_data} is not None{indent}actual_data={result_dict['actual_data'][key]}{indent}assert success")
         # else:
         # 进入else则认为未取到key 既校验失败
         # return False
@@ -199,7 +204,9 @@ class Checker(object):
                     log.fatal(
                         f'get data fail ,key=\' {key} \' is not in actual_data={actual_data}')
                     raise AssertionError(f'get data fail ,key=\' {key} \' is not in actual_data={actual_data}')
-                log.info(f"start check {func},except_data=={except_data},actual_data={result_dict['actual_data']}")
+                log.info(f"start check {func},except_data:{except_data},actual_data:{result_dict['actual_data']}")
+                print(
+                    f"start check {func}{indent}except_data:{except_data}{indent}actual_data:{result_dict['actual_data']}")
                 func(self, value, check_data)
 
         return wrapper
@@ -248,14 +255,61 @@ class Checker(object):
     # 判断返回json中包含元素的数量  done 9.30
     @get_check_data
     def checkArrayElementsCount(self, except_data, actual_data):
-        print('ex', except_data)
-        print('ac', actual_data)
-        assert except_data == len(actual_data.keys())
+        if isinstance(actual_data, dict):
+            assert except_data == len(actual_data.keys())
+        elif isinstance(actual_data, list):
+            assert except_data == len(actual_data)
 
     # 正则匹配校验 入参直接返回 字段值 不包括键名  9.30done  无法校验正则本身正确性
     @get_check_data
     def checkStringRegexMatch(self, except_data, actual_data):
         assert re.match(except_data, actual_data)
+
+    def for_check_value(self, except_data, actual_data):
+        index = 0
+        key_list = []
+        except_value = ''
+        for key, value in except_data.items():
+            except_value = value
+            key_list = key.split('.')
+            for i in key_list:
+                try:
+                    if i == '*':
+                        # 获取*的索引
+                        index = key_list.index(i)
+                        break
+                    else:
+                        actual_data = actual_data[i]
+                except:
+                    raise Exception(
+                        f'get data fail , \'{i}\' in keylist={key_list} is not in actual_data={actual_data}')
+        actual_result = []
+        for di in actual_data:
+            flag = True
+            for i in range(index + 1, len(key_list)):
+                try:
+                    di = di[key_list[i]]
+                except:
+                    log.warning(f'get data fail , \'{key_list[i]}\' in keylist={key_list} is not in actual_data={di}')
+                    flag = False
+                    break
+            else:
+                if not flag:
+                    continue
+                else:
+                    actual_result.append(di)
+        print(f'actual_result is {actual_result}')
+        return actual_result, except_value
+
+    #校验值存在
+    #字典中多重key且值不确定在哪个key中，规范格式要求data.content.*.order_no 其中*为多重key
+    def checkValueIsExist(self, except_data, actual_data):
+        actual_result, except_value = self.for_check_value(except_data, actual_data)
+        assert except_value in actual_result
+    #同上
+    def checkValueNotExist(self, except_data, actual_data):
+        actual_result, except_value = self.for_check_value(except_data, actual_data)
+        assert except_value not in actual_result
 
 
 if __name__ == '__main__':
