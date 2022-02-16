@@ -2,11 +2,29 @@ import json
 import re
 import copy
 from log.logpro import log
-from util.readJson import ReadJson
+from util.json_util import ReadJson
 from util.util_common import util_common
 import traceback
 
 indent = '\n--------------------------------------------------------------------------\n'
+
+
+def get_check_data(func):
+    def wrapper(self, except_data, actual_data):
+        result_dict = util_common().recursive(except_data, actual_data)
+        for key, value in result_dict['except_data'].items():
+            try:
+                check_data = result_dict['actual_data'][key]
+            except:
+                log.fatal(
+                    f'get data fail ,key=\' {key} \' is not in actual_data={actual_data}')
+                raise AssertionError(f'get data fail ,key=\' {key} \' is not in actual_data={actual_data}')
+            log.info(f"start check {func},except_data:{except_data},actual_data:{result_dict['actual_data']}")
+            print(
+                f"start check {func}{indent}except_data:{except_data}{indent}actual_data:{result_dict['actual_data']}")
+            func(self, value, check_data)
+
+    return wrapper
 
 
 class Checker(object):
@@ -87,6 +105,7 @@ class Checker(object):
                             if key_list[i].isdigit():
                                 num = int(key_list[i])
                                 tmp_actual_data = tmp_actual_data[num]
+
                             else:
                                 tmp_actual_data = tmp_actual_data[key_list[i]]
 
@@ -100,7 +119,7 @@ class Checker(object):
                             f'{indent}except_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={tmp_actual_data},type:{type(value)}]{indent}check success! ')
                     except:
                         log.fatal(
-                            f"except_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={tmp_actual_data},type:{type(value)}]{indent}check Fail")
+                            f"\nexcept_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={tmp_actual_data},type:{type(value)}]{indent}check Fail")
                         # print(
                         #     f"except_data:[{key}={value},type:{type(value)}]{indent}actual_data:[{key}={tmp_actual_data},type:{type(value)}]{indent}check Fail")
                         raise AssertionError(
@@ -136,6 +155,7 @@ class Checker(object):
     #                 "content": ["sp_no","amount"]
     #               }
     #             }, 验证通过
+
     def checkNotNull(self, except_data, actual_data):
         # 递归获取数据
         result_dict = util_common().recursive(except_data, actual_data)
@@ -158,10 +178,6 @@ class Checker(object):
                 assert check_data[j] != '' and check_data[j] is not None
             print(
                 f"except_data is {except_data} is not None{indent}actual_data={result_dict['actual_data'][key]}{indent}assert success")
-        # else:
-        # 进入else则认为未取到key 既校验失败
-        # return False
-        #     raise AssertionError
 
     # 判断字段为空 传进来的为'<null>' 逻辑与不空相同 支持列表
     def checkNull(self, except_data, actual_data):
@@ -194,22 +210,22 @@ class Checker(object):
     #         print(f" assert success")
 
     # 根据期望数据获取实际结果
-    def get_check_data(func):
-        def wrapper(self, except_data, actual_data):
-            result_dict = util_common().recursive(except_data, actual_data)
-            for key, value in result_dict['except_data'].items():
-                try:
-                    check_data = result_dict['actual_data'][key]
-                except:
-                    log.fatal(
-                        f'get data fail ,key=\' {key} \' is not in actual_data={actual_data}')
-                    raise AssertionError(f'get data fail ,key=\' {key} \' is not in actual_data={actual_data}')
-                log.info(f"start check {func},except_data:{except_data},actual_data:{result_dict['actual_data']}")
-                print(
-                    f"start check {func}{indent}except_data:{except_data}{indent}actual_data:{result_dict['actual_data']}")
-                func(self, value, check_data)
-
-        return wrapper
+    # def get_check_data(func):
+    #     def wrapper(self, except_data, actual_data):
+    #         result_dict = util_common().recursive(except_data, actual_data)
+    #         for key, value in result_dict['except_data'].items():
+    #             try:
+    #                 check_data = result_dict['actual_data'][key]
+    #             except:
+    #                 log.fatal(
+    #                     f'get data fail ,key=\' {key} \' is not in actual_data={actual_data}')
+    #                 raise AssertionError(f'get data fail ,key=\' {key} \' is not in actual_data={actual_data}')
+    #             log.info(f"start check {func},except_data:{except_data},actual_data:{result_dict['actual_data']}")
+    #             print(
+    #                 f"start check {func}{indent}except_data:{except_data}{indent}actual_data:{result_dict['actual_data']}")
+    #             func(self, value, check_data)
+    #
+    #     return wrapper
 
     # 判断类型相同  10.11 done
     @get_check_data
@@ -244,8 +260,6 @@ class Checker(object):
     # }
     @get_check_data
     def checkWithoutKeys(self, except_data, actual_data):
-        print('ex', except_data)
-        print('ac', actual_data)
         if isinstance(except_data, list):
             for i in range(len(except_data)):
                 assert except_data[i] not in actual_data.keys()
@@ -301,19 +315,20 @@ class Checker(object):
         print(f'actual_result is {actual_result}')
         return actual_result, except_value
 
-    #校验值存在
-    #字典中多重key且值不确定在哪个key中，规范格式要求data.content.*.order_no 其中*为多重key
+    # 校验值存在
+    # 字典中多重key且值不确定在哪个key中，规范格式要求data.content.*.order_no 其中*为多重key
     def checkValueIsExist(self, except_data, actual_data):
         actual_result, except_value = self.for_check_value(except_data, actual_data)
         assert except_value in actual_result
-    #同上
+
+    # 同上
     def checkValueNotExist(self, except_data, actual_data):
         actual_result, except_value = self.for_check_value(except_data, actual_data)
         assert except_value not in actual_result
 
 
 if __name__ == '__main__':
-    # pass
+    pass
     # if re.match(r'^\<[A-Za-z]+\>$', '<mathch>'):
     #     print('1')
     # else:
@@ -326,6 +341,5 @@ if __name__ == '__main__':
     # a = '1231241'
     # b = 'str'
     # assert isinstance(a, eval(b))
-    lis = [{'label': 'Subtotal:', 'value': '17180', 'type': 1, 'tag': 'TOTAL'},
-           {'label': 'Shipping Fee: ', 'value': '+0', 'type': 1}]
-    print(lis[1])
+    l = [{"str": "1"}, {"ss": "tst"}]
+    print(l[1])
