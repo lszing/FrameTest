@@ -1,6 +1,6 @@
 import copy
 from log.logpro import log
-from util.readJson import ReadJson
+from util.json_util import ReadJson
 
 
 def get_value_by_rule_in_dict(origin_data, data):
@@ -78,7 +78,8 @@ def get_value_by_rule_in_dict(origin_data, data):
     #     del (data['params'][to_delete_key])
     return data
 
-#目前使用这个 10.18删除 "if 'params' in data.keys():" 且将data['params']改为data apiBase中调用两次
+
+# 目前使用这个 10.18删除 "if 'params' in data.keys():" 且将data['params']改为data apiBase中调用两次
 def get_value_by_rule_in_dict1(origin_data, data):
     # 这里提前定义空字典 防止下面报UnboundLocalError: local variable 'tmp_dict' referenced before assignment
     tmp_multi_dict = {}
@@ -269,49 +270,30 @@ class util_common:
                 try:
                     for i in split_list:
                         # 这里根据切分完的循环获取值
-                        split_actual_data = split_actual_data[i]
-
-                    # self.result_dict['actual_data'][split_list[len(split_list) - 1]] = actual_data[key]
-                    # self.result_dict['except_data'][split_list[len(split_list) - 1]] = except_data[key]
-                    self.result_dict['actual_data'][split_list[len(split_list) - 1]] = split_actual_data
+                        split_actual_data = split_actual_data[int(i) if i.isdigit() else i]
                     self.result_dict['except_data'][split_list[len(split_list) - 1]] = except_data[key]
+                    self.result_dict['actual_data'][split_list[len(split_list) - 1]] = split_actual_data
                 except:
-                    # log.warning(
-                    #     f'get data fail ,{i} in key={split_list} is not in actual_data={actual_data},this key return None ')
                     raise AssertionError(
                         f'get data fail , \'{i}\' in keylist={split_list} is not in actual_data={split_actual_data}')
-                #     self.result_dict['actual_data'][split_list[i]] = None
-                #     self.result_dict['except_data'][split_list[i]] = split_list[i+1]
-                #     continue
             # 若不是a.b.c="***" 而是a="b" 直接将数据放入结果中
             elif (not isinstance(except_data[key], dict)):
                 try:
-                    # self.result_dict['actual_data'][actual_data[key]]=actual_data[key][value_list][0]
-                    # self.result_dict['except_data'][key] = except_data[key]
                     self.result_dict['actual_data'][key] = actual_data[key]
                     self.result_dict['except_data'][key] = except_data[key]
                 except:
                     log.warning(
                         f'get data fail ,key \' {key} \' is not in actual_data={actual_data},this  key return None ')
                     raise AssertionError(f'get data fail ,\'{key}\'  is not in actual_data={actual_data}')
-                    # 找到到实际数据指控逻辑
-                    # self.result_dict['actual_data'][key] = None
-                    # self.result_dict['except_data'][key] = except_data[key]
-                    # continue
             # 进入这里则是多重字典
             else:
                 mult_actual_data = copy.deepcopy(actual_data)
                 mult_except_data = copy.deepcopy(except_data)
                 try:
-                    mult_actual_data = mult_actual_data[key]
+                    mult_actual_data = mult_actual_data[int(key) if key.isdigit() else key]
                     mult_except_data = mult_except_data[key]
                 except:
                     raise AssertionError(f'get data fail ,\'{key}\'  is not in actual_data={actual_data}')
-                    # log.warning(
-                    #     f'get data fail ,{key} is not in actual_data={actual_data},this key return None ')
-                    # self.result_dict['actual_data'][key] = None
-                    # self.result_dict['except_data'][key] = except_data[key]
-                    # continue
                 # todo  10.12 修改 兼容 haskey"<withkeys>": {
                 #   "data": {
                 #     "content": ["sp_no","amount"]
@@ -322,50 +304,6 @@ class util_common:
                 self.recursive(mult_except_data, mult_actual_data)
         return self.result_dict
 
-
-#         # 判断value非字典的话 则认为取到最里层
-#         if not isinstance(except_data[key], dict):
-#             self.result_dict['actual_data'][key] = actual_data[key]
-#             self.result_dict['except_data'][key] = except_data[key]
-#         else:
-#             try:
-#                 actual_data = actual_data[key]
-#                 except_data = except_data[key]
-#             except:
-#                 log.fatal(
-#                     f'check fail ,key {key} is not in actual_data={actual_data} ')
-#                 return False
-#
-# else:
-# # 这里是只有一个key
-# for key in key_list:
-#     list = key.split('.')
-#     # 这里判断list长度大于1 则认为是content.data.sp_no 这种格式 这种不需要递归
-#     if len(list) > 1:
-#         for i in range(len(list)):
-#             try:
-#                 actual_data = actual_data[i]
-#             except:
-#                 log.fatal(
-#                     f'get data fail ,key {i} is not in actual_data={actual_data} ')
-#                 return False
-#         self.result_dict['actual_data'][list[len(list) - 1]] = actual_data
-#         self.result_dict['except_data'][list[len(list) - 1]] = value_list
-#     try:
-#         # 这里获取到最里层 若层数不对则返回False
-#         actual_data = actual_data[key]
-#         except_data = except_data[key]
-#     except:
-#         log.fatal(
-#             f'check fail ,key {key} is not in actual_data={actual_data} ')
-#         return False
-# # 如果不是字典则认为拿到期望数据最里层了
-# else:
-#     self.result_dict['except_data'] = except_data
-# self.result_dict['actual_data'] = actual_data
-# return self.result_dict
-# # 递归   这里必须加 return
-# return recursive(except_data, actual_data)
 
 if __name__ == '__main__':
     # data = ReadJson('test1').readJson()
