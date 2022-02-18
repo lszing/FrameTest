@@ -5,12 +5,13 @@ from log.logpro import log
 from util.json_util import ReadJson
 from util.util_common import util_common
 import traceback
+from util.util_redis import redisManager
 
 indent = '\n--------------------------------------------------------------------------\n'
 
 
 def get_check_data(func):
-    def wrapper(self, except_data, actual_data):
+    def wrapper(except_data, actual_data):
         result_dict = util_common().recursive(except_data, actual_data)
         for key, value in result_dict['except_data'].items():
             try:
@@ -22,7 +23,7 @@ def get_check_data(func):
             log.info(f"start check {func},except_data:{except_data},actual_data:{result_dict['actual_data']}")
             print(
                 f"start check {func}{indent}except_data:{except_data}{indent}actual_data:{result_dict['actual_data']}")
-            func(self, value, check_data)
+            func(value, check_data)
 
     return wrapper
 
@@ -30,7 +31,7 @@ def get_check_data(func):
 class Checker(object):
     method_map = {
         'response': 'check_point',
-        'db': '',
+        'db': 'check_redis',
         'redis': '',
     }
     rule_map = {
@@ -42,7 +43,7 @@ class Checker(object):
         "elementscount": "checkArrayElementsCount",
         "withoutkeys": "checkWithoutKeys",
         "regexmatch": "checkStringRegexMatch",
-        "existvalue": "checkValueIsExist",  # 字典中多重key且值不确定在哪个key中，规范格式要求data.content.*.order_no 其中*为多重key
+        "existvalue": "checkValueIsExist",  # 字典中多个key且值不确定在哪个key中，规范格式要求data.content.*.order_no 其中*为多重key
         "existnotvalue": "checkValueNotExist",  # 同上
         "inarray": "checkContainsInArray",
         "checktype": "checkTypeOnly",
@@ -50,11 +51,14 @@ class Checker(object):
     }
     type_list = ["int", "str", "float", "list", "tuple", "dict", "set"]
 
-    def __init__(self, except_data, actual_data):
+    def __init__(self, except_data, actual_data, redis_conf=None, db_conf=None):
         self.except_data = except_data
         self.actual_data = actual_data
+        self.redis_conf = redis_conf
+        self.db_conf = db_conf
 
     def check(self):
+        all_result = True
         # 最外层判断 校验相应，db，redis  todo  目前只有response 对应的check_point
         for key, value in self.except_data.items():
             try:
@@ -62,13 +66,14 @@ class Checker(object):
             except:
                 log.warning(f'key {key} is not in mehtod_map {self.method_map}')
                 raise AssertionError(f'key {key} is not in mehtod_map {self.method_map}')
-            result = getattr(self, met)(value)
+            all_result = getattr(self, met)(value)
+
             # if result == False:
             #     raise AssertionError
             # else:
             #     return True
-            if result != False:
-                return True
+        if all_result != False:
+            return True
 
     def check_point(self, except_data):
         # 判断是字典
@@ -138,6 +143,25 @@ class Checker(object):
                             f"except_data:[{key}={value},type:{type(value)}],actual_data:[{key}={self.actual_data[key]},type={type(self.actual_data[key])}],check Fail")
                 #  eg: message.data.amount
             return True
+
+    def check_redis(self, redis_except_data):
+        redis_manager = redisManager(self.redis_conf)
+        for k, v in redis_except_data.items():
+            for key, value in v.items():
+                assert getattr(redis_manager, 'get_' + k[1:-1])(key) == value
+
+        # if '<string>' in redis_except_data.keys():
+        #     for k, v in redis_except_data['<string>'].items():
+        #         assert redis_manager.get_key(k) == v
+        # if '<map>' in redis_except_data.keys():
+        #     for k, v in redis_except_data['<map>'].items():
+        #         assert redis_manager.get_map(k) == v
+        # if '<list>' in redis_except_data.keys():
+        #     for k, v in redis_except_data['<list>'].items():
+        #         assert redis_manager.get_list(k) == v
+        # if '<set>' in redis_except_data.keys():
+        #     for k, v in redis_except_data['<set>'].items():
+        #         assert redis_manager.get_set(k) == v
 
     def get_rule(self, key):
         key = key[1:len(key) - 1]
@@ -341,5 +365,7 @@ if __name__ == '__main__':
     # a = '1231241'
     # b = 'str'
     # assert isinstance(a, eval(b))
-    l = [{"str": "1"}, {"ss": "tst"}]
-    print(l[1])
+    # l = [{"str": "1"}, {"ss": "tst"}]
+    # print(l[1])
+    # dict1 = {"test1": "1", "test2": "2"}
+    # print("test23" in dict1.keys())
