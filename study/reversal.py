@@ -11,7 +11,7 @@ def solution(str):
     #float('-inf') 负无穷   float('inf') 正无穷
     lenth, result = float('-inf'), ''
     for i in range(len(str)):
-        for j in range(0 + i, len(str)):
+        for j in range(1 + i, len(str)+1):
             if str[i:j] == str[i:j][::-1]:
                 if j - i > lenth:
                     lenth = j - i
@@ -20,5 +20,5 @@ def solution(str):
 
 if __name__ == '__main__':
     # print(reversal('asdfg'))
-    print(solution('121123417686768912321'))
+    print(solution('abbavbnmmnbv'))
     print(float("-inf"))
