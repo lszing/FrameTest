@@ -12,7 +12,8 @@ file_list = []
 for root, dirs, files in os.walk(data_path):
     file_list = files
 file_list_test = []
-file_list_test.append(file_list[6].split('.')[0])
+for i in file_list:
+    file_list_test.append(i.split('.')[0])
 # file_list_test.append(file_list[7].split('.')[0])
 test_api_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/' + 'suites'
 
@@ -27,7 +28,7 @@ class Worker(threading.Thread):
     def run(self):
         while True:
             try:
-                # 判断任务队列为空跳过
+                # 判断任务队列为空结束死循环
                 if self.work_queue.empty():
                     os.system(f"allure generate {temp_path} -o {report_path} --clean ")
                     break

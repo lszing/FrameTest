@@ -7,6 +7,7 @@ import random
 from log.logpro import log
 from util.json_util import ReadJson
 import importlib
+import os
 
 
 def pytest_addoption(parser):
@@ -45,15 +46,23 @@ def pytest_generate_tests(metafunc):
 
 def get_all_caseData(argv: list):
     path = argv[-1]
-    if '\\' in path:
-        filename = path.split('\\')[-1]
-    elif '/' in path:
-        filename = path.split('/')[-1]
+    filename = ''
+    if path[-2:] != 'py':
+        all_caseData = []
+        class_obj_list = get_all_data_file()
+        for i in class_obj_list:
+            all_caseData.append(i.case_data)
+        return all_caseData
     else:
-        filename = path
+        if '\\' in path:
+            filename = path.split('\\')[-1]
+        elif '/' in path:
+            filename = path.split('/')[-1]
+        else:
+            filename = path
     mod = importlib.import_module('suites.' + filename[:-3])
-    classObj = getattr(mod, filename[:-3].capitalize())
-    return classObj.case_data
+    class_obj = getattr(mod, filename[:-3].capitalize())
+    return class_obj.case_data
 
 
 def handle_data(filter, caseData):
@@ -66,3 +75,32 @@ def handle_data(filter, caseData):
         log.fatal(f'filter [{filter} not in caseData [{caseData}]]')
         raise Exception
     return result
+
+
+def get_all_data_file():
+    absolute_path = os.path.dirname(os.path.abspath(__file__))
+    data_path = absolute_path + '/suites/'
+    file_list = ''
+    for root, dirs, files in os.walk(data_path):
+        file_list = files
+        break
+    class_obj_list = []
+    failed_file = []
+    for fileName in file_list:
+        splited_fileName = fileName.split('.')[0]
+        if 'test' not in splited_fileName:
+            continue
+        try:
+            mod = importlib.import_module('suites.' + splited_fileName)
+            class_obj = getattr(mod, splited_fileName.capitalize())
+            class_obj_list.append(class_obj)
+        except Exception as e:
+            log.fatal(f'error filename is [{splited_fileName}],Exception:[{e}]')
+            failed_file.append(splited_fileName)
+            continue
+    print(failed_file)
+    return class_obj_list
+
+
+if __name__ == '__main__':
+    print(get_all_data_file())

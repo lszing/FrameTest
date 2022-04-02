@@ -5,7 +5,7 @@ from log.logpro import log
 path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-class ReadJson():
+class ReadJson:
     def __init__(self, file_, filter=None):
         log.info(f'filter is  {filter} ')
         self.file_ = file_
@@ -24,11 +24,11 @@ class ReadJson():
             # 1 filter=case1  path  指定文件指定case
             if self.filter is not None and self.filter != 'default':
                 result.append(jsonData[self.filter])
-            # 2 filter=all  path不传 执行全部case
+            # 2 filter=all  path不传 指定文件全部case
             else:
                 for key in jsonData:
                     result.append(jsonData[key])
-        # 3 filter不传(default) path 指定文件全部case
+        # 3 filter不传(default) path 执行全部case
         else:
             return self.get_all_data_file()
         return result
@@ -37,6 +37,7 @@ class ReadJson():
 
     def get_all_data_file(self):
         data_path = path + '/data/'
+        file_list=[]
         for root, dirs, files in os.walk(data_path):
             file_list = files
         all_file_data = []

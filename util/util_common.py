@@ -200,6 +200,8 @@ def get_value_by_rule1(origin_data, str):
     for j in range(count):
         try:
             # tempRet.get(keyList[j])
+            if str_list[j].isdigit():
+                str_list[j]=int(str_list[j])
             temp_ret = temp_ret[str_list[j]]
             count -= 1
         except:

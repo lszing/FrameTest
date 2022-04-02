@@ -1,3 +1,4 @@
+import sys
 from util.request import RequestsHandler
 from conf.sign_key import SpKey
 import hashlib
@@ -7,6 +8,7 @@ from util import util_common
 from log.logpro import log
 import copy
 from lib.common.checker import Checker
+import conf.redis_conf as redC
 
 
 class ApiBase(object):
@@ -16,12 +18,19 @@ class ApiBase(object):
     common_url = ''
     common_assert = {}
     common_method = ''
+    common_resBodyFormat = ''
+    api_description = ''
+    redis_conf_name = ''
+    db_conf_class = ''
 
     def __init__(self, data, origin_data=None):
         self.data = data
         self.origin_data = origin_data
         self.headers = ''
         self.no_sign_list = []
+        # if self.redis_conf_name:
+        #     self.redis_conf_dict = self.get_redis_conf()
+        #     print('执行接口名称为---------------------------------' + self.api_description)
 
     def __new__(cls, *args, **kwargs):
         # 模拟final
@@ -40,7 +49,7 @@ class ApiBase(object):
     def data_prepare(self):
         log.info("state exe data_prepare")
 
-        # 将写死的基础数据与使用者自定义的的数据合并
+        # 将api的公共数据与使用者自定义的的数据合并
         self.deal_data()
 
         # 处理上游数据
@@ -50,16 +59,16 @@ class ApiBase(object):
         if 'body' in self.data:
             self.data['body'] = util_common.get_value_by_rule_in_dict1(self.origin_data, self.data['body'])
 
-
         # 定制化数据 也是准备数据最后一步
         self.customized_data()
 
     def do_work(self):
         log.info("state exe do_work")
-        # TODO 请求主流程
         res = self.do_send()
         if res:
             self.do_format(res)
+        else:
+            raise AssertionError(f'request failed,please check in  log')
 
     # 放在  dataparams 中 用于使用者自定义数据/加密入参、签名(需要根据公司决定)
     def customized_data(self):
@@ -67,8 +76,10 @@ class ApiBase(object):
         return
 
     def do_send(self):
-        res = RequestsHandler().method_req(self.data['method'], self.data['url'], self.data['params'],self.data['body'],
-                                           self.data['headers'])
+        res = RequestsHandler().method_req(self.data['method'], self.data['url'], self.data['params'],
+                                           self.data['body'],
+                                           self.data['headers'],
+                                           self.data['resBodyFormat'])
         return res
 
     # 放在  customizedData 中
@@ -129,7 +140,6 @@ class ApiBase(object):
             for i in sorted(arrinput):
                 print("sorted")
                 ret = self.get_make_sign_string(arrinput[i])
-                # print(ret)
                 str += "&" + i + "=" + ret
                 # 从第一位开始 即 将第一位的&删除
             arrinput = str[1:]
@@ -153,7 +163,7 @@ class ApiBase(object):
     # 处理case数据与接口common数据
     def deal_data(self):
         # todo  copy.deepcopy
-        # {**dict1,**dict2} 相当于PHP merge(array1,array2) 即后数组合并前数组 有键重复则以后数组为主
+        # {**dict1,**dict2} 相当于PHP merge(array1,array2) 即后数组合并前数组 有键重复则以后一个为主
         # self.common_params.copy()
 
         self.data['params'] = {**self.common_params,
@@ -166,14 +176,34 @@ class ApiBase(object):
         self.data['assert'] = {**self.common_assert,
                                **self.data['assert']} if 'assert' in self.data else self.common_assert
         self.data['method'] = self.common_method
-        #修改self.common_url[0]------>self.common_url
+        self.data['resBodyFormat'] = self.common_resBodyFormat if self.common_resBodyFormat != '' else None
         self.data['url'] = ServerUriConf.offlineIP + self.common_url
+
+    def get_redis_conf(self):
+        return getattr(redC, self.redis_conf)
 
 
 if __name__ == '__main__':
-    # 测试字典update
-    # headers = {'a': '111', 'b': '222'}
-    # aaaa = {'a': '222', 'c': '222'}
-    # headers.update(aaaa)
-    # print(headers)
-    pass
+    arrInput = 'duzhenyong003'
+    md5 = hashlib.md5()
+    md5.update(arrInput.encode(encoding='utf-8'))
+    sign = md5.hexdigest()
+    sign16 = md5.hexdigest()[8:-8]
+    print(sign)
+    print(sign16)
+
+
+    def atesttt(stri):
+        if len(stri) == 1:
+            return stri
+        result = ''
+        num = 0
+        for i in range(len(stri)):
+            for j in range(1 + i, len(stri)):
+                if stri[i:j] == stri[i:j][::-1] and j - i > num:
+                    result = stri[i:j]
+                    num = j - i
+        return result
+
+
+    print(atesttt('abbcuytyuc'))
