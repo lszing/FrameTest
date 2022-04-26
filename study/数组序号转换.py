@@ -5,10 +5,13 @@
 序号从 1 开始编号。
 一个元素越大，那么序号越大。如果两个元素相等，那么它们的序号相同。
 每个数字的序号都应该尽可能地小。'''
+import enum
 
 
 def arrayRankTransform(arr):
     print(set(arr))
+
+    '''sorted 只能用在list上'''
     '''sorted 语法：
 sorted(iterable, key=None, reverse=False)  
 参数说明：
@@ -21,5 +24,14 @@ reverse -- 排序规则，reverse = True 降序 ， reverse = False 升序（默
         d[v] = i
     return [d[i] for i in arr]
 
+'''
+枚举类
+    不可外部修改类变量，不允许重复变量
+'''
+class testt(enum.Enum):
+    TEST = 1
+    TEST2 = 1
+
 
 print(arrayRankTransform(['1', '44', '2']))
+testt.TEST = 3

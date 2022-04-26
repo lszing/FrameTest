@@ -338,11 +338,14 @@ class Checker:
         actual_result, except_value = self.for_check_value(except_data, actual_data)
         assert except_value not in actual_result
 
-
 if __name__ == '__main__':
-    print([{"mid": 43, "email": None, "title": "notitle"}, {"mid": 43, "email": "test", "title": "notitle"},
-           {"mid": 43, "email": "test", "title": "notitle"}, {"mid": 43, "email": "test", "title": "notitle"}][0])
-    pass
+    # print([{"mid": 43, "email": None, "title": "notitle"}, {"mid": 43, "email": "test", "title": "notitle"},
+    #        {"mid": 43, "email": "test", "title": "notitle"}, {"mid": 43, "email": "test", "title": "notitle"}][0])
+    # pass
+
+    def plusOne(digits:list[int])->list[int]:
+        print(list(map(int,(list(str(int(''.join(map(str,digits)))+1))))))
+    plusOne([1,2,5,9])
     # if re.match(r'^\<[A-Za-z]+\>$', '<mathch>'):
     #     print('1')
     # else:

@@ -2,14 +2,6 @@ import redis
 
 
 class redisManager:
-    redis_util_map = {
-        'string': '',
-        'map': '',
-        'set': '',
-        'zset': '',
-        'list': '',
-
-    }
 
     def __init__(self, redis_conf):
         self.redis_conn_pool = redis.ConnectionPool(host=redis_conf['host'], port=redis_conf['port'],
@@ -57,16 +49,18 @@ class redisManager:
         elif num == 1:
             return self.r.hgetall(hash_key)
 
-
+    def setnx(self,key):
+        return self.r.setnx()
 # r = redis.StrictRedis(host='127.0.0.1', port=6379, db=0, password='lsz', decode_responses=True)
 # r.set('test', 'test')
 # print(type(r.get('test')))
 
-redis_conn_pool = redis.ConnectionPool(host='127.0.0.1', port=6379, db=0, password='lsz', decode_responses=True)
-r = redis.Redis(connection_pool=redis_conn_pool)
-print(r.get('test'))
-# ex过期时间
+# redis_conn_pool = redis.ConnectionPool(host='127.0.0.1', port=6379, db=0, password='lsz', decode_responses=True)
+# r = redis.Redis(connection_pool=redis_conn_pool)
+# print(r.get('test'))
+# # ex过期时间
+#
+# r.set('a', '1', ex=200)
+# r.setex('b', 2000, '2')
+# print(r.keys())
 
-r.set('a', '1', ex=200)
-r.setex('b', 2000, '2')
-print(r.keys())

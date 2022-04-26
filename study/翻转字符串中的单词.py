@@ -7,10 +7,12 @@ def reverseWords(s: str) -> str:
     s_list = s.split(' ')
     return ' '.join(i[::-1] for i in s_list)
 
-
+#列表也可以翻转
 def reverseWords1(s: str) -> str:
     return (' '.join(s.split()[::-1]))[::-1]
 
 
 print(reverseWords('let go'))
 print(reverseWords1('let go'))
+
+

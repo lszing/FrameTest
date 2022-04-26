@@ -7,7 +7,7 @@ def sort(nums):
     print(a(4))
     print(a(3))
     #lru_cache 缓存装饰器  lru_cache(None)最多缓存次数无限制
-    print(sorted(nums, key=lru_cache(None)(lambda n: (nums.count(n), -n))))
+    print(sorted(nums, key=lru_cache(None)(lambda n: (nums.count(n), -n))  ))
     return sorted(nums, key=lambda n: (nums.count(n), -n))
 
 

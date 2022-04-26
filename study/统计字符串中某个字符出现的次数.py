@@ -1,6 +1,7 @@
 '''统计字符串中某个字符出现的个数
 解题思路1：按照指定字符切分字符串
 解题思路2：笨方法遍历
+解题思路3：直接使用str.count()方法
 '''
 
 
@@ -16,9 +17,10 @@ class solution():
         while a < len(s):
             if s[a:a + keyLen] == keyword:
                 result += 1
-                a += keyLen
-            else:
-                a += 1
+            #     a += keyLen
+            # else:
+            #     a += 1
+            a += 1
         return result
 
     def statisticalTimes2(self, s, keyword):
@@ -26,6 +28,6 @@ class solution():
 
 
 if __name__ == '__main__':
-    print(solution().statisticalTimes('AABBABBACAABCAA', 'AA'))
-    print(solution().statisticalTimes1('AABBABBACAABCAA', 'AA'))
-    print(solution().statisticalTimes2('AABBABBACAABCAA', 'AA'))
+    print(solution().statisticalTimes('AAABABBACAABCAA', 'AA'))
+    print(solution().statisticalTimes1('AAABABBACAABCAA', 'AA'))
+    print(solution().statisticalTimes2('AAABABBACAABCAA', 'AA'))
