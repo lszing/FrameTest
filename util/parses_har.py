@@ -2,6 +2,7 @@ import os
 import json
 import re
 from urllib import parse
+import json
 
 
 class ParsesHar():
@@ -45,11 +46,24 @@ class ParsesHar():
             w.write(indent + 'common_body = {\n')
             # value['name'] + '\": ' + '\"' + index['value'].replace('\"','\\\"').replace('\'', '\\\'') if isinstance(index['value'], str) else index['value']
             if 'postData' in request_data.keys():
-                for index in request_data['postData']['params']:
-                    w.write(indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"',
-                                                                                       re.sub('\'', '\\\'',
-                                                                                              parse.unquote(index[
-                                                                                                                'value']))) + '\",\n')
+                if request_data['postData']['mimeType'] == 'application/json':
+                    self.resBodyFormat = 'JSON'
+                    request_json_data = json.loads(request_data['postData']['text'])
+                    for key, value in request_json_data.items():
+                        # parse.unquote===urldecode
+                        w.write(indent * 2 + '\"' + key + '\": ' + '\"' + str(value) + '\",\n')
+                if request_data['postData']['mimeType'] == 'application/x-www-form-urlencoded':
+                    for index in request_data['postData']['params']:
+                        w.write(indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"',
+                                                                                           re.sub('\'', '\\\'',
+                                                                                                  parse.unquote(index[
+                                                                                                                    'value']))) + '\",\n')
+                # todo
+                # for index in request_data['postData']['text']:
+                #     w.write(indent * 2 + '\"' + index['name'] + '\": ' + '\"' + re.sub('\"', '\\\"',
+                #                                                                        re.sub('\'', '\\\'',
+                #                                                                               parse.unquote(index[
+                #                                                                                                 'value']))) + '\",\n')
             w.write(indent + '}\n')
 
             # common_headers
@@ -67,11 +81,20 @@ class ParsesHar():
             request_data['url'].split('/')
 
             # common_url
-            url = request_data['url'].split('?')[0].split('/').pop()
+            # url = request_data['url'].split('?')[0].split('/').pop()
+            url_list = request_data['url'].split('?')[0].split('/')
+            url_list.pop(0)
+            url_list.pop(0)
+            url_list.pop(0)
+            url = '/'.join(url_list)
             w.write(indent + 'common_url = \'/' + url + '\'\n')
 
             # common_method
             w.write(indent + 'common_method = \'' + request_data['method'] + '\'\n\n')
+
+            # common_resBodyFormat post请求数据是否为json
+            if self.resBodyFormat:
+                w.write(indent + 'common_resBodyFormat = \'' + self.resBodyFormat + '\'\n\n')
 
             # customized_data
             w.write(indent + '#准备数据最后一步,支持定制化操作,#父类目前为根据sp_no生成签名\n')
@@ -103,10 +126,10 @@ class ParsesHar():
 
 
 if __name__ == "__main__":
-    par = ParsesHar("searchCate")
+    par = ParsesHar("getransformlinks111")
     par.parses()
     par.har_to_data()
-    print('pytest -v -s --path test_searchCate Suites/test_api.py' )
+    # print('pytest -v -s --path test_gettransformlinks Suites/test_api.py')
     # strrr = "120"
     # isinstance(st1r, str): st1r?"123"
     # print(re.sub('\"', '\\\"', re.sub('\'', '\\\'', strrr)))

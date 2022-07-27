@@ -132,7 +132,7 @@ class SingleLinkList(object):
                 p = p.next
             previous.next = Node(data, p)
 
-    # 魔术方法 str(对象) 或 print(对象)时调用
+    # 魔术方法   str(对象) 或 print(对象)时调用
     def __str__(self):
         data_list = []
         d = self.__head
@@ -353,7 +353,7 @@ class SingleLinkList(object):
         while fast:
             if fast.data == data:
                 # 注意这样是不行的  这样fast指针没有后移
-                slow.next = fast.next
+                # slow.next = fast.next
                 # 这是正确的
                 # fast先指针后移 这样才能确保下次循环fast后移一位
                 # slow指针域指向fast
