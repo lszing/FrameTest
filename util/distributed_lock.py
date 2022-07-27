@@ -1,6 +1,5 @@
 import uuid
 
-import identifier as identifier
 import redis
 import time
 
@@ -102,7 +101,7 @@ def release_lock2(lock_name, value):
         while True:
             try:
                 pipe.watch(lock_names)
-                if pipe.get(lock_names)==value:
+                if pipe.get(lock_names) == value:
                     pipe.multi()
                     pipe.delete(lock_names)
                     pipe.execute()
@@ -112,3 +111,153 @@ def release_lock2(lock_name, value):
             except redis.WatchError:
                 pass
     return 'lock release failed'
+
+
+def acquire_lock3(lock_name, value, acquire_time, expire_time):
+    lock_names = 'lock_names' + lock_name
+    end = time.time() + acquire_time
+    while time.time() < end:
+        if redis_client.setex(lock_names, expire_time, value):
+            return 'lock success'
+        elif redis_client.ttl(lock_names) == -1:
+            redis_client.expire(lock_names, expire_time)
+        time.sleep(0.001)
+    return 'lock failed'
+
+
+def release_lock3(lock_name, value):
+    lock_names = 'lock_names' + lock_name
+    with redis_client.pipeline() as pipe:
+        while True:
+            try:
+                pipe.watch(lock_names)
+                if pipe.get(lock_names) == value:
+                    pipe.multi()
+                    pipe.delete(lock_names)
+                    pipe.execute()
+                    return 'release lock success'
+                pipe.unwatch()
+                break
+            except redis.WatchError:
+                pass
+    return 'release lock failed'
+
+
+def acquire_lock5(lock_name, acquire_time, value, expire_time):
+    lock_names = 'lock_name' + lock_name
+    end = time.time() + acquire_time
+    while time.time() < end:
+        if redis_client.setex(lock_names, expire_time, value):
+            return 'lock success'
+        elif redis_client.ttl(lock_names) == -1:
+            redis_client.expire(lock_names, expire_time)
+        time.sleep(0.01)
+    return 'lock failed'
+
+
+def release_lock5(lock_name, value):
+    lock_names = 'lock_name' + lock_name
+    with redis_client.pipeline(lock_names) as pipe:
+        while True:
+            try:
+                pipe.watch(lock_names)
+                if pipe.get(lock_names) == value:
+                    pipe.multi()
+                    pipe.delete(lock_names)
+                    pipe.execute()
+                    return 'release lock'
+                pipe.unwatch()
+                break
+            except redis.WatchError:
+                pass
+    return 'release lock failed'
+
+
+def acquire_lock6(lock_name, value, acquire_time=10, expire_time=10):
+    lock_names = 'lock_name' + lock_name
+    end = time.time() + acquire_time
+    while time.time() < end:
+        if redis_client.setex(lock_names, expire_time, value):
+            return 'lock success'
+        elif redis_client.ttl(lock_names) == -1:
+            redis_client.expire(lock_names, expire_time)
+        time.sleep(0.01)
+    return 'lock failed'
+
+
+def release_lock6(lock_name, value):
+    lock_names = 'lock_name' + lock_name
+    with redis_client.pipeline(lock_names) as pipe:
+        while True:
+            try:
+                pipe.watch(lock_names)
+                if pipe.get(lock_names) == value:
+                    pipe.multi()
+                    pipe.delete()
+                    pipe.execute()
+                    return 'release lock'
+                pipe.unwatch()
+                break
+            except redis.WatchError:
+                pass
+    return 'release lock failed'
+
+
+def acquire_lock7(lock_name, value, acquire_time, expire_time):
+    lock_names = 'lock_name' + lock_name
+    end = time.time() + acquire_time
+    while time.time() < end:
+        if redis_client.setex(lock_names, value, expire_time) == 1:
+            return 'lock success'
+        elif redis_client.ttl(lock_names) == -1:
+            redis_client.expire(lock_names, expire_time)
+        time.sleep(0.01)
+    return 'lock failed'
+
+
+def release_lock7(lock_name, value):
+    lock_names = 'lock_name' + lock_name
+    with redis_client.pipeline() as pipe:
+        while True:
+            try:
+                pipe.watch(lock_names)
+                if pipe.get(lock_name) == value:
+                    pipe.multi()
+                    pipe.delete(lock_names)
+                    pipe.execute()
+                    return True
+                pipe.unwatch()
+                break
+            except redis.exceptions.WatchError:
+                pass
+    return False
+
+
+def acquire_lock8(lock_name, value, acquire_time, expire_time):
+    lock_names = 'lock_name' + lock_name
+    end = time.time()
+    while time.time() < end:
+        if redis_client.setex(lock_names, expire_time, value) == 1:
+            return 'lock success'
+        elif redis_client.ttl(lock_names) == -1:
+            redis_client.expire(lock_names, expire_time)
+        time.sleep(0.01)
+    return 'lock failed'
+
+
+def release_lock8(lock_name, value):
+    lock_names = 'lock_name' + lock_name
+    with redis_client.pipeline() as pipe:
+        while True:
+            try:
+                pipe.watch(lock_names)
+                if pipe.get(lock_names) == value:
+                    pipe.multi()
+                    pipe.delete(lock_names)
+                    pipe.execute()
+                    return 'success'
+                pipe.unwatch()
+                break
+            except redis.exceptions.WatchError:
+                pass
+    return 'fail'

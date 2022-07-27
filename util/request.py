@@ -72,9 +72,16 @@ class RequestsHandler:
             return self.get_req(url, params=params, headers=headers, **kw)
         elif method.lower() == 'post' or method == 'post':
             return self.post_req(url, params=params, data=data, headers=headers, resBodyFormat=resBodyFormat, **kw)
+        elif method.lower() == 'put' or method == 'put':
+            response = requests.put(url, params=params, data=data, headers=headers,verify=False, **kw)
+            log.info(f'{indent} response is \n {response.content.decode()}')
+            return response
         else:
-            return requests.request(method, url, **kw)
-    #sichuakechuo
+            response = requests.request(method, url, **kw)
+            log.info(f'{indent} response is \n {response.content.decode()}')
+            return response
+
+    # sichuakechuo
     def structure_request(self, url, params=None, data=None, headers=None, **kw):
         params_str = ''
         data_str = ''

@@ -15,7 +15,7 @@ class Cashdesk_pc_bankquota(ApiBase):
     common_assert = {
         # "ret": "0"
     }
-    common_url = '/bankquota',
+    common_url = '/bankquota'
     common_method = 'get'
 
     def customized_data(self):

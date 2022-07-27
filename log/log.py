@@ -54,7 +54,7 @@ global logidd
 logidd = generatelogid()
 
 if __name__ == '__main__':
-    # print(os.getcwd()+'\case.log')
-    # print(os.path.dirname(os.path.abspath(__file__)) + '\\case.log')
+    print(os.getcwd()+'\case.log')
+    print(os.path.dirname(os.path.abspath(__file__)) + '\\case.log')
     # log().info('testttttttttttttttttttttt:{}'.format('12332'))
     print(generatelogid())

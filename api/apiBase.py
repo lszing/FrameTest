@@ -64,9 +64,9 @@ class ApiBase(object):
 
     def do_work(self):
         log.info("state exe do_work")
-        res = self.do_send()
-        if res:
-            self.do_format(res)
+        response, headers = self.do_send()
+        if response:
+            self.do_format(response, headers)
         else:
             raise AssertionError(f'request failed,please check in  log')
 
@@ -80,7 +80,9 @@ class ApiBase(object):
                                            self.data['body'],
                                            self.data['headers'],
                                            self.data['resBodyFormat'])
-        return res
+
+        return json.loads(res.content.decode()) if res.content else None, res.headers if res.headers else None
+        # return res
 
     # 放在  customizedData 中
     def signature(self):
@@ -152,13 +154,15 @@ class ApiBase(object):
         return arrinput
 
     # TODO 不放到工具类
-    def do_format(self, res):
+    def do_format(self, resData, resHeaders):
         self.data['response'] = {}
         self.data['response']['headers'] = {}
-        if res.content:
-            self.data['response'] = json.loads(res.content.decode())
-        if res.headers:
-            self.data['response']['headers'] = res.headers
+        self.data['response'] = resData
+        self.data['response']['headers'] = resHeaders
+        # if res.content:
+        #     self.data['response'] = json.loads(res.content.decode())
+        # if res.headers:
+        #     self.data['response']['headers'] = res.headers
 
     # 处理case数据与接口common数据
     def deal_data(self):

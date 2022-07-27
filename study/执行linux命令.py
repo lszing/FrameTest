@@ -15,14 +15,14 @@ subprocess.STDOUT
 
 out = subprocess.Popen('deamon -t 3600', stderr=subprocess.PIPE)
 lines = os.popen('top -bi -d 1').readlines()
-for l in lines:
-    with open('top.log', 'w', encoding='UTF-8') as f:
+with open('top.log', 'w', encoding='UTF-8') as f:
+    for l in lines:
         f.write(l)
         f.write('\n')
 stdout, stderr = out.communicate()
 exitcode = out.returncode
-for i in stderr:
-    with open('error.log', 'w', encoding='UTF-8') as f:
+with open('error.log', 'w', encoding='UTF-8') as f:
+    for i in stderr:
         f.write(i)
         f.write('\n')
 

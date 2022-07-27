@@ -1,3 +1,5 @@
+import uuid
+
 import redis
 
 
@@ -64,3 +66,5 @@ class redisManager:
 # r.setex('b', 2000, '2')
 # print(r.keys())
 
+
+print(str(uuid.uuid4()))

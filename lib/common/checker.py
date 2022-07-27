@@ -51,6 +51,7 @@ class Checker:
         "inarray": "checkContainsInArray",
         "checktype": "checkTypeOnly",
         "containsubset": "checkContainsSubset",
+        "":""
     }
     type_list = ["int", "str", "float", "list", "tuple", "dict", "set"]
 

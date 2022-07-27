@@ -2,7 +2,7 @@
 
 子字符串 是字符串中的一个连续字符序列。'''
 
-
+#返回参数在字符串中最后一次出现的位置，没有查询到则放回-1
 def solution(s: str):
     return max([s.rfind(i) - s.find(i) - 1 for i in s])
 

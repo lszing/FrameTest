@@ -11,12 +11,15 @@
           "response": {
             "<notnull>": {
               "data": {
-                "content": ["sp_no","amount"]
+                "content": [
+                  "sp_no",
+                  "amount"
+                ]
               }
             },
             "<notequal>": {
               "data": {
-                "content":{
+                "content": {
                   "amount": "123"
                 }
               }

@@ -46,7 +46,7 @@ class ParsesHar():
             w.write(indent + 'common_body = {\n')
             # value['name'] + '\": ' + '\"' + index['value'].replace('\"','\\\"').replace('\'', '\\\'') if isinstance(index['value'], str) else index['value']
             if 'postData' in request_data.keys():
-                if request_data['postData']['mimeType'] == 'application/json':
+                if request_data['postData']['mimeType'] == 'application/json' or request_data['postData']['mimeType'] == 'application/json;charset=UTF-8':
                     self.resBodyFormat = 'JSON'
                     request_json_data = json.loads(request_data['postData']['text'])
                     for key, value in request_json_data.items():
@@ -126,7 +126,7 @@ class ParsesHar():
 
 
 if __name__ == "__main__":
-    par = ParsesHar("getransformlinks111")
+    par = ParsesHar("onstatus")
     par.parses()
     par.har_to_data()
     # print('pytest -v -s --path test_gettransformlinks Suites/test_api.py')

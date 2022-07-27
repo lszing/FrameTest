@@ -1,8 +1,4 @@
-def solution(str):
-    list=[]
-    for i in str:
-        list.append(i)
-    count={}
-    for j  in sorted(list):
-        count[j]=list.count(j)
-    max(count.values())
+if __name__ == '__main__':
+    tuple = ('1', '2', '3')
+    print(id(tuple[1:2]))
+    print(id(tuple))

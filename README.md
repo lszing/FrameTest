@@ -1,5 +1,6 @@
-记录&说明
+# 记录&说明
 1.json文件中入参多重字典内获取上一个接口的数据 使用方法  10.13
+```json
 "params": {
           "body.param1":"step.scene.response.key1.key2.value",
           #实际：body:{"param1":动态数据}
@@ -16,9 +17,11 @@
           }
           #实际：body:{"param1":{"param2":{"param3":动态数据1,"param4":动态数据2}}}
         }
+```
+
 目前支持三种格式 且相同key必须放在外面
 
-2.   .pytest_cache文件夹记录上一次跑case的情况
+2. .pytest_cache文件夹记录上一次跑case的情况
     如只跑上一次失败的case 则加入参数--last-failed
     其他相关参数
         --failed-first 先运行上次失败的case，然后再运行其余case
@@ -37,3 +40,9 @@
         "withoutkeys": "checkWithoutKeys",   #校验key不存在
         "regexmatch": "checkStringRegexMatch",  #校验正则 ps:正则规则正确性无法保证
     }
+## 问题
+- 需要增加different 功能
+- 增加过滤功能
+- python jsonpath
+- h.html5
+- pythonxpath

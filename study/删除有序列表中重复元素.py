@@ -14,4 +14,20 @@ class Solution:
 
 
 if __name__ == '__main__':
-    print(Solution().removeDuplicates([1, 1, 2]))
+    print(Solution().removeDuplicates([1, 1, 2, 2, 4, 5, 5, 5]))
+
+
+    def removeRepeat(nums: list[int]) -> list[int]:
+        i = 0
+        j = 1
+        while j < len(nums):
+            if nums[i] == nums[j]:
+                nums.pop(j)
+                continue
+            else:
+                i += 1
+                j += 1
+        return nums
+
+
+    print(removeRepeat([1, 1, 2, 2, 4, 5, 5, 5]))

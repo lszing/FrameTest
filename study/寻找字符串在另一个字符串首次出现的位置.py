@@ -16,3 +16,18 @@ if __name__ == '__main__':
     strs = 'helloll'
     s = 'll'
     print(strs.find(s))
+
+
+    def findFirst(needle: str, haystack: str) -> int:
+        if len(haystack) < len(needle):
+            return -1
+        a = 0
+        while a+len(needle) <= len(haystack):
+            if haystack[a:a+len(needle)] == needle:
+                return a
+            else:
+                a += 1
+        return -1
+
+
+    print(findFirst('ll', 'healloll'))

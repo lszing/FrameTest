@@ -4,7 +4,6 @@ import random
 import inspect
 from logging.handlers import RotatingFileHandler
 import time
-from concurrent_log_handler import ConcurrentRotatingFileHandler
 
 log_path = os.path.dirname(os.path.abspath(__file__))
 log_name = log_path + '\\case.log'
@@ -78,6 +77,10 @@ class Log(object):
             self.__loggers.update({level: logger})
             # print(self.__loggers)
 
+    def setLogId(self, logId):
+        if logId:
+            self.logid = logId
+
     def getLogMessage(self, level, message):
         frame, filename, lineNo, functionName, code, unknowField = inspect.stack()[2]
 
@@ -108,6 +111,7 @@ class Log(object):
         message = self.getLogMessage("fatal", message)
 
         self.__loggers[logging.FATAL].fatal(message)
+
     @staticmethod
     def generatelogid():
         list = []
@@ -116,7 +120,9 @@ class Log(object):
             list.append(no)
         logid = ''.join(list).replace("", "")
         return logid
-#文件中直接实例化 其他文件直接导入实例
+
+
+# 文件中直接实例化 其他文件直接导入实例
 createHandlers()
 log = Log(generatelogid())
 

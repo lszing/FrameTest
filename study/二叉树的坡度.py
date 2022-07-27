@@ -30,5 +30,6 @@ class solution:
         # 递归获取根节点的右叶子节点的总坡度
         sum_right = self.dfs(node.right)
         #获取
+        #abs返回函数绝对值
         self.result += abs(sum_right - sum_left)
         return sum_left + sum_right + node.val

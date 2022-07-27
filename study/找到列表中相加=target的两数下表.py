@@ -17,6 +17,17 @@ class Solution():
 
 if __name__ == '__main__':
     print(Solution().twoSum([1, 2, 3, 4], 7))
-    print(Solution().twoSum([1, 2, 3, 4], 7))
+    print(Solution().twoSum1([1, 2, 3, 4], 7))
     li = ['a', 'b', 'c', 'd']
     print(list(enumerate(li)))
+
+
+    def twoSum2(nums: list, target: int) -> list:
+        a = dict()
+        for i, num in enumerate(nums):
+            if a.get(target - num) is not None:
+                return [i, a.get(target - num)]
+            a[num] = i
+
+
+    print(twoSum2([1, 2, 3, 4], 7))

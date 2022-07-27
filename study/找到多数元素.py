@@ -13,16 +13,26 @@ def majorityElement1(nums: list[int]) -> int:
     counts = Counter(nums)
     print(counts.get)
     print(counts.keys())
-    #按照字典值对key进行排序获取最大值
+    # 按照字典值对key进行排序获取最大值
     return max(counts.keys(), key=counts.get)
-print(majorityElement1(a))
 
+
+print(majorityElement1(a))
 
 '''
 解法2 如果将数组 nums 中的所有元素按照单调递增或单调递减的顺序排序，那么下标为n/2的元素（下标从 0 开始）一定是众数。
 
 '''
-def majorityElement2(nums:list[int])->int:
+
+
+def majorityElement2(nums: list[int]) -> int:
     nums.sort()
-    return nums[len(nums)//2]
+    return nums[len(nums) // 2]
+
+
 print(majorityElement2(a))
+
+
+def majorityElement3(nums: list[int]) -> int:
+    counts = Counter(nums)
+    return max(counts.keys(),key=counts.get)

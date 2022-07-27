@@ -8,6 +8,29 @@
 
 def solution(s: int):
     result = []
+    temp = False
+    if s <= 0:
+        t = 100
+    else:
+        t = s + 100
+    for i in range(t, s, -1):
+        for j in range(2, i):
+            # 有一个取余等于0就代表不是质数，结束循环
+            if i % j == 0:
+                temp = True
+                break
+        if temp is False:
+            result.append(i)
+        temp = False
+    return result
+
+
+print(solution(0))
+
+
+def solution1(s: int) -> list:
+    result = []
+    temp = True
     if s <= 0:
         t = 100
     else:
@@ -15,10 +38,12 @@ def solution(s: int):
     for i in range(t, s, -1):
         for j in range(2, i):
             if i % j == 0:
+                temp = True
                 break
-            else:
-                result.append(i)
+        if temp is False:
+            result.append(i)
+        temp = False
     return result
 
 
-print(solution(0))
+print(solution1(0))

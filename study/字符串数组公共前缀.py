@@ -20,3 +20,13 @@ class Solution():
 if __name__ == '__main__':
     strs = ["flower", "flow", "flight"]
     print(Solution().longestCommonPrefix(strs))
+
+    def longestCommonPrefix1(nums: list) -> str:
+        maxStr = max(nums)
+        minStr = min(nums)
+        for i, j in enumerate(minStr):
+            if j != maxStr[i]:
+                return minStr[:i]
+        return minStr
+
+    print(longestCommonPrefix1(strs))
