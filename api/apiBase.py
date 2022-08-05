@@ -22,6 +22,7 @@ class ApiBase(object):
     api_description = ''
     redis_conf_name = ''
     db_conf_class = ''
+    common_bodyStr = ''
 
     def __init__(self, data, origin_data=None):
         self.data = data
@@ -56,7 +57,7 @@ class ApiBase(object):
         # self.data = util_common.get_value_by_rule_in_dict(self.origin_data, self.data)
         if 'params' in self.data:
             self.data['params'] = util_common.get_value_by_rule_in_dict1(self.origin_data, self.data['params'])
-        if 'body' in self.data:
+        if 'body' in self.data and isinstance(self.data['body'], dict):
             self.data['body'] = util_common.get_value_by_rule_in_dict1(self.origin_data, self.data['body'])
 
         # 定制化数据 也是准备数据最后一步
@@ -174,6 +175,9 @@ class ApiBase(object):
                                **self.data['params']} if 'params' in self.data else self.common_params
         self.data['body'] = {**self.common_body,
                              **self.data['body']} if 'body' in self.data else self.common_body
+
+        self.data['body'] = {**self.common_bodyStr,
+                             **self.data['body']} if 'bodyStr' in self.data else self.common_bodyStr
         self.data['headers'] = {**self.common_headers,
                                 **self.data['headers']} if 'headers' in self.data else self.common_headers
 
