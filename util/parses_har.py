@@ -93,8 +93,8 @@ class ParsesHar():
             w.write(indent + 'common_method = \'' + request_data['method'] + '\'\n\n')
 
             # common_resBodyFormat post请求数据是否为json
-            if self.resBodyFormat:
-                w.write(indent + 'common_resBodyFormat = \'' + self.resBodyFormat + '\'\n\n')
+            # if self.resBodyFormat:
+            #     w.write(indent + 'common_resBodyFormat = \'' + self.resBodyFormat + '\'\n\n')
 
             # customized_data
             w.write(indent + '#准备数据最后一步,支持定制化操作,#父类目前为根据sp_no生成签名\n')
@@ -126,7 +126,7 @@ class ParsesHar():
 
 
 if __name__ == "__main__":
-    par = ParsesHar("onstatus")
+    par = ParsesHar("123")
     par.parses()
     par.har_to_data()
     # print('pytest -v -s --path test_gettransformlinks Suites/test_api.py')

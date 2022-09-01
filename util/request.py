@@ -47,7 +47,8 @@ class RequestsHandler:
                 response = requests.post(url, json=data, params=params, headers=headers, proxies=whistle_proxies,
                                          verify=False, **kw)
             else:
-                response = requests.post(url, data=data, params=params, headers=headers, proxies=whistle_proxies,
+                response = requests.post(url, data=data, params=params, headers=headers,
+                                         proxies=whistle_proxies,
                                          verify=False, **kw)
             # session = requests.Session()
             # req = session.Request('POST', url, params=params, data=data, headers=headers, **kw)
@@ -73,7 +74,7 @@ class RequestsHandler:
         elif method.lower() == 'post' or method == 'post':
             return self.post_req(url, params=params, data=data, headers=headers, resBodyFormat=resBodyFormat, **kw)
         elif method.lower() == 'put' or method == 'put':
-            response = requests.put(url, params=params, data=data, headers=headers,verify=False, **kw)
+            response = requests.put(url, params=params, data=data, headers=headers, verify=False, **kw)
             log.info(f'{indent} response is \n {response.content.decode()}')
             return response
         else:

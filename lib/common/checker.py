@@ -1,12 +1,17 @@
 import json
 import re
 import copy
+
+import util.util_common
+from Def import def_table
+from conf.db_conf import DbConf
 from log.logpro import log
 from util.json_util import ReadJson
 from util.util_common import util_common
 import traceback
 from util.util_redis import redisManager
 from conf.redis_conf import redisConf
+import Def.def_table
 
 indent = '\n--------------------------------------------------------------------------\n'
 
@@ -33,7 +38,7 @@ def get_check_data(func):
 class Checker:
     method_map = {
         'response': 'check_point',
-        'db': '',
+        'db': 'check_db',
         'redis': 'check_redis',
     }
     rule_map = {
@@ -45,21 +50,22 @@ class Checker:
         "elementscount": "checkArrayElementsCount",
         "withoutkeys": "checkWithoutKeys",
         "regexmatch": "checkStringRegexMatch",
-        "existvalue": "checkValueIsExist",  # 字典中多个key且值不确定在哪个key中，规范格式要求data.content.*.order_no 其中*为多重key
+        "existvalue": "checkValueIsExist",  # 字典中多个key且值不确定在哪个key中，规范格式data.content.*.order_no 其中*为多重key
         "existnotvalue": "checkValueNotExist",  # 同上
-
+        # 暂未实现
         "inarray": "checkContainsInArray",
         "checktype": "checkTypeOnly",
         "containsubset": "checkContainsSubset",
-        "":""
+        "": ""
     }
     type_list = ["int", "str", "float", "list", "tuple", "dict", "set"]
 
-    def __init__(self, except_data, actual_data, redis_conf=None, db_conf=None):
+    def __init__(self, origin_data, except_data, actual_data, redis_conf=None, db_conds=None):
         self.except_data = except_data
         self.actual_data = actual_data
         self.redis_conf = redisConf.test_redis
-        self.db_conf = db_conf
+        self.db_conds = db_conds
+        self.origin_data = origin_data
 
     def check(self):
         all_result = True
@@ -83,7 +89,7 @@ class Checker:
         if isinstance(except_data, dict):
             for key, value in except_data.items():
                 # 判断正则<***> 调用各个方法
-                if re.match(r'^\<[A-Za-z]+\>$', key):
+                if re.match(r'^<[A-Za-z]+>$', key):
                     # 通过正则
                     func = self.get_rule(key)
                     getattr(self, func)(value, self.actual_data)
@@ -151,6 +157,77 @@ class Checker:
                         f"\ncheck redis {indent}except_data:[{key}={value},type:{type(value)}],actual_data:[{key}={result},type={type(result)}],check Fail")
                     raise AssertionError(
                         f"\ncheck redis {indent}except_data:[{key}={value},type:{type(value)}],actual_data:[{key}={result},type={type(result)}],check Fail")
+
+    '''
+    check_table_dict:  case数据中传来 表名、需要校验的字段、期望结果
+    
+    "DB": {
+            "t_pl_account": {
+                "overpaid_withdraw_link": "www.xxxx.xxx?token=123"
+            }
+        }
+    '''
+
+    def check_db(self, check_table_dict):
+        assert_result_list = []
+        if check_table_dict:
+            for k, v in check_table_dict.items():
+                table_result_dict = {k: {}}
+                # 获取def
+                table_def = def_table.DefTable.prod_table[k]
+                db_name = table_def['db_name']
+                table_name = table_def['tb_name']
+                db_conn = table_def['db_conn']
+                # 获取db_client
+                sql_client = DbConf().get_sqlClient(getattr(DbConf, db_conn))
+                # 处理查询条件
+                conds_str = self.compose_conds(k)
+
+                # 遍历一个表中多个字段，处理数据，生成sql，查询，比较
+                for except_key, except_value in v.items():
+                    to_except_value = util.util_common.get_value_by_rule2(self.origin_data, except_value)
+                    # 生成sql
+                    sql = self.compose_sql(db_name, table_name, conds_str, except_key)
+                    # 执行sql
+                    result = sql_client(sql)[0]
+                    # 比较  失败放入unequal_dict ,成功放入equal_dict
+                    if to_except_value == result:
+                        table_result_dict[k]['equal_dict'] = f'[{to_except_value}]==[{result}]'
+                    else:
+                        table_result_dict[k]['unequal_dict'] = f'[{to_except_value}]!=[{result}]'
+                assert_result_list.append(table_result_dict)
+        assert '!=' in assert_result_list, f'assert result {assert_result_list}'
+
+    def compose_sql(self, db_name: str, table_name: str, conds: str, check_key: str) -> str:
+        sql = f'select {check_key} from {db_name}.{table_name} ' + conds
+        log.info(f'sql is {sql}')
+        return sql
+
+    def compose_conds(self, k):
+        if 'conds' in self.db_conds[k].keys():
+            conds_str = 'where'
+            for field, untreated_value in self.db_conds[k]['conds'].items():
+                treated_value = util.util_common.get_value_by_rule2(self.origin_data, untreated_value)
+                # db_conn[k]['conds'][field] = treated_value
+                conds_str += ' ' + field + '=' + '\'' + treated_value + '\'' + ' ' + 'and'
+            conds_str = conds_str[:-4]
+        else:
+            conds_str = ''
+        if 'appends' in self.db_conds[k].keys() and self.db_conds[k]['appends'] is not None:
+            for i in self.db_conds[k]['appends']:
+                conds_str += ' ' + i + ' '
+        log.info(f'db_conds origin is {self.db_conds[k]},After treatment is {conds_str}')
+        return conds_str
+
+    def get_db_conn(self, table_name):
+        sql_client = ''
+        prod_table = def_table.DefTable.prod_table
+        try:
+            db_conn = prod_table[table_name]['db_conn']
+            return db_conn
+        except:
+            pass
+        return sql_client
 
     def get_rule(self, key):
         key = key[1:len(key) - 1]
@@ -263,7 +340,7 @@ class Checker:
                 assert except_data[
                            i] in actual_data.keys(), f"checkArrayHasKeys fail except_data={except_data[i]} not in actual_data={actual_data.keys()}"
         else:
-            assert except_data in actual_data.keys()
+            assert except_data in actual_data.keys(), f"checkArrayHasKeys fail except_data={except_data} not in actual_data={actual_data.keys()}"
 
     # 判断返回json不包含key   9.30done
     # "<withoutkeys>": {
@@ -339,14 +416,17 @@ class Checker:
         actual_result, except_value = self.for_check_value(except_data, actual_data)
         assert except_value not in actual_result
 
+
 if __name__ == '__main__':
     # print([{"mid": 43, "email": None, "title": "notitle"}, {"mid": 43, "email": "test", "title": "notitle"},
     #        {"mid": 43, "email": "test", "title": "notitle"}, {"mid": 43, "email": "test", "title": "notitle"}][0])
     # pass
 
-    def plusOne(digits:list[int])->list[int]:
-        print(list(map(int,(list(str(int(''.join(map(str,digits)))+1))))))
-    plusOne([1,2,5,9])
+    def plusOne(digits: list[int]) -> list[int]:
+        print(list(map(int, (list(str(int(''.join(map(str, digits))) + 1))))))
+
+
+    plusOne([1, 2, 5, 9])
     # if re.match(r'^\<[A-Za-z]+\>$', '<mathch>'):
     #     print('1')
     # else:

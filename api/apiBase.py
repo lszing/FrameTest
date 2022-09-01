@@ -1,4 +1,6 @@
 import sys
+
+from Def import def_table
 from util.request import RequestsHandler
 from conf.sign_key import SpKey
 import hashlib
@@ -9,6 +11,7 @@ from log.logpro import log
 import copy
 from lib.common.checker import Checker
 import conf.redis_conf as redC
+import Def.def_table
 
 
 class ApiBase(object):
@@ -23,6 +26,8 @@ class ApiBase(object):
     redis_conf_name = ''
     db_conf_class = ''
     common_bodyStr = ''
+    common_host = ''
+    db_condition = {}
 
     def __init__(self, data, origin_data=None):
         self.data = data
@@ -104,7 +109,8 @@ class ApiBase(object):
         log.info(f"sign is {self.data['params']['sign']}")
 
     def do_check(self):
-        check_result = Checker(self.data['assert'], self.data['response']).check()
+        check_result = Checker(self.origin_data, self.data['assert'], self.data['response'],
+                               db_conds=self.db_condition).check()
         if check_result:
             self.data['assert_result'] = True
         # todo 这里应该没用 单条case中如果有校验失败的则上面会抛异常阻断流程
@@ -170,14 +176,12 @@ class ApiBase(object):
         # todo  copy.deepcopy
         # {**dict1,**dict2} 相当于PHP merge(array1,array2) 即后数组合并前数组 有键重复则以后一个为主
         # self.common_params.copy()
-
         self.data['params'] = {**self.common_params,
                                **self.data['params']} if 'params' in self.data else self.common_params
         self.data['body'] = {**self.common_body,
                              **self.data['body']} if 'body' in self.data else self.common_body
 
-        self.data['body'] = {**self.common_bodyStr,
-                             **self.data['body']} if 'bodyStr' in self.data else self.common_bodyStr
+        self.data['body'] = self.data['bodyStr'] if 'bodyStr' in self.data else self.common_bodyStr
         self.data['headers'] = {**self.common_headers,
                                 **self.data['headers']} if 'headers' in self.data else self.common_headers
 
@@ -185,10 +189,15 @@ class ApiBase(object):
                                **self.data['assert']} if 'assert' in self.data else self.common_assert
         self.data['method'] = self.common_method
         self.data['resBodyFormat'] = self.common_resBodyFormat if self.common_resBodyFormat != '' else None
-        self.data['url'] = ServerUriConf.offlineIP + self.common_url
+        self.data[
+            'url'] = self.common_host + self.common_url if self.common_host else ServerUriConf.offlineIP + self.common_url
 
     def get_redis_conf(self):
         return getattr(redC, self.redis_conf)
+
+    def get_db_conf(self):
+        table = def_table.DefTable.prod_table
+        var = table[self.db_condition]
 
 
 if __name__ == '__main__':

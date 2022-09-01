@@ -25,9 +25,8 @@ class Case_control():
                     str(key)] else ''
             log.info('start execute step:{} ,scene:{} process'.format(key, scene_class_name))
             mod = importlib.import_module('api.' + scene_class_name)
-            # 实例化process类 TODO 这里可能要改 改为分步骤调用 dataParams,dowork,asserts
             # .capitalize()将字符串第一位字母变成大写 这里有问题 会把除以一个字母外的所有字母变为小写
-            data = getattr(mod, scene_class_name.capitalize())(self.case_data['stepList'][str(key)],
+            data = getattr(mod, scene_class_name)(self.case_data['stepList'][str(key)],
                                                                self.case_req_and_ret_list).process()
             self.case_req_and_ret_list[key][scene_class_name] = data
         self.case_req_and_ret_list.clear()

@@ -1,13 +1,20 @@
 import pymysql
 
+from log.logpro import log
+
 
 class DbManager:
     conn = None
     cursor = None
 
-    def __init__(self):
-        if self.conn is None:
-            self.conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='root', db='testdb')
+    def __init__(self, db_conf):
+        # if self.conn is None:
+            # self.conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='root', db='testdb')
+        try:
+            self.conn = pymysql.connect(host=db_conf['HOST'], port=db_conf['PORT'], user=db_conf['USER'],
+                                        password=db_conf['PASSWORD'])
+        except:
+            raise Exception('MySQL connect failed')
         if self.cursor is None:
             self.getCursor()
 
