@@ -7,3 +7,4 @@
 - 执行文件下全部case  pytest -vs  ./suites/api_demo.py
 - 执行suites下全部测试文件 pytest -vs ./suites
 - 测试报告用的pytest-html,conftest中重写钩子函数增加用例描述和错误信息
+- util/parese_har.py 解析har文件生成基础api和测试文件test_**.py
