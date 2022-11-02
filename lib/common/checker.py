@@ -4,7 +4,7 @@ import copy
 
 import util.util_common
 from Def import def_table
-from conf.db_conf import DbConf
+from conf.db_conf_up import DbConf
 from log.logpro import log
 from util.json_util import ReadJson
 from util.util_common import util_common
