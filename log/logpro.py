@@ -124,6 +124,7 @@ class Log(object):
 
 # 文件中直接实例化 其他文件直接导入实例
 createHandlers()
+#单例模式
 log = Log(generatelogid())
 
 # global logidd
