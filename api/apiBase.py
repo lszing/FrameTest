@@ -37,6 +37,12 @@ class ApiBase(object):
         # if self.redis_conf_name:
         #     self.redis_conf_dict = self.get_redis_conf()
         #     print('执行接口名称为---------------------------------' + self.api_description)
+    '''
+    使用 类名() 创建对象时，Python 的解释器 首先 会 调用 __new__ 方法为对象 分配空间
+    __new__是一个内置静态方法，有Object类提供
+    作用：1.在内存中为对象分配空间 2.返回对象引用
+    return super().__new__(cls) 重新__new__固定写法
+    '''
 
     def __new__(cls, *args, **kwargs):
         # 模拟final
