@@ -2,14 +2,16 @@ import pymysql
 
 from log.logpro import log
 
-
-class DbManager:
+'''
+使用上下文优化mysql连接 todo暂时先不用，后续修改
+'''
+class DbManager_new:
     conn = None
     cursor = None
 
     def __init__(self, db_conf):
         # if self.conn is None:
-            # self.conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='root', db='testdb')
+        # self.conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='root', db='testdb')
         try:
             self.conn = pymysql.connect(host=db_conf['HOST'], port=db_conf['PORT'], user=db_conf['USER'],
                                         password=db_conf['PASSWORD'])
@@ -17,6 +19,16 @@ class DbManager:
             raise Exception('MySQL connect failed')
         if self.cursor is None:
             self.getCursor()
+
+    def __str__(self):
+        return 'mysql 上下文管理器'
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_trace):
+        self.cursor.close()
+        self.conn.close()
 
     def getCursor(self):
         self.cursor = self.conn.cursor()
@@ -77,16 +89,6 @@ class DbManager:
             self.endTransaction('rollback')
         self.cursor.close()
         self.conn.close()
-
-    def test(self):
-        sqlconn = pymysql.connect(host='127.0.0.1', port=3306, user='root', password='root', db='testdb')
-        # 获取数据库游标
-        cursor = sqlconn.cursor()
-        sql = 'show databases'
-        print(cursor.execute(sql))
-        print(cursor.fetchall())
-        cursor.close()
-        sqlconn.close()
 
 
 if __name__ == '__main__':
