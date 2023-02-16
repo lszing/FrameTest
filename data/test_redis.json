@@ -1,0 +1,37 @@
+{
+  "case1": {
+    "info": "",
+    "stepList": {
+      "1": {
+        "scene": "cashdesk_pc_bankquota",
+        "assert": {
+          "response": {
+            "code": 0
+          },
+          "redis": {
+            "<string>": {
+              "key": "value"
+            },
+            "<map>": {
+              "key.key1": "value1",
+              "key.key2": "value2"
+            }
+          },
+          "<set>": {
+          },
+          "<zset>": {
+          },
+          "<list>": {
+            "list1": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        }
+      }
+    }
+  }
+}
+}

@@ -1,0 +1,15 @@
+{
+  "case1": {
+    "info": "",
+    "stepList": {
+      "1": {
+        "scene": "cashdesk_pc_bankquota",
+        "assert": {
+          "response": {
+            "<withkeys>": "code"
+          }
+        }
+      }
+    }
+  }
+}
